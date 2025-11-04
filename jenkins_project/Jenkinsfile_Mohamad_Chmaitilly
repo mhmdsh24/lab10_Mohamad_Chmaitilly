@@ -28,11 +28,60 @@ pipeline {
                 }
             }
         }
+        stage('Coverage') {
+            steps {
+                script {
+                    sh """
+                        source ${VIRTUAL_ENV}/bin/activate && \
+                        coverage run -m pytest && \
+                        coverage report && \
+                        coverage html
+                    """
+                }
+            }
+            post {
+                always {
+                    publishHTML([
+                        reportDir: 'htmlcov',
+                        reportFiles: 'index.html',
+                        reportName: 'Coverage Report'
+                    ])
+                }
+            }
+        }
+        stage('Security Scan') {
+            steps {
+                script {
+                    sh """
+                        source ${VIRTUAL_ENV}/bin/activate && \
+                        bandit -r . -f json -o bandit-report.json || true && \
+                        bandit -r . -f txt -o bandit-report.txt
+                    """
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'bandit-report.*', allowEmptyArchive: true
+                }
+            }
+        }
         stage('Deploy') {
             steps {
                 script {
-                    // Deployment logic, e.g., pushing to a remote server
-                    echo "Deploying application..."
+                    sh """
+                        source ${VIRTUAL_ENV}/bin/activate && \
+                        echo "Deploying application..." && \
+                        mkdir -p deploy && \
+                        cp app.py deploy/ && \
+                        cp requirements.txt deploy/ && \
+                        echo "Application files copied to deploy directory"
+                    """
+                    // For remote deployment, uncomment and configure:
+                    // sh """
+                    //     scp -r deploy/* user@remote-server:/path/to/deployment/
+                    //     ssh user@remote-server "cd /path/to/deployment && pip install -r requirements.txt"
+                    // """
+                    echo "Deployment completed successfully!"
                 }
             }
         }
