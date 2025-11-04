@@ -24,7 +24,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    bat "call ${VIRTUAL_ENV}\\Scripts\\activate.bat && pytest"
+                    bat "call ${VIRTUAL_ENV}\\Scripts\\activate.bat && set PYTHONPATH=%CD% && pytest"
                 }
             }
         }
@@ -33,6 +33,7 @@ pipeline {
                 script {
                     bat """
                         call ${VIRTUAL_ENV}\\Scripts\\activate.bat && \
+                        set PYTHONPATH=%CD% && \
                         coverage run -m pytest && \
                         coverage report && \
                         coverage html
