@@ -42,11 +42,7 @@ pipeline {
             }
             post {
                 always {
-                    publishHTML([
-                        reportDir: 'htmlcov',
-                        reportFiles: 'index.html',
-                        reportName: 'Coverage Report'
-                    ])
+                    archiveArtifacts artifacts: 'htmlcov/**', allowEmptyArchive: true
                 }
             }
         }
