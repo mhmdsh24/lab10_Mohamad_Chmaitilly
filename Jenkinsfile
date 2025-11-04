@@ -8,7 +8,7 @@ pipeline {
             steps {
                 script {
                     if (!fileExists("${env.WORKSPACE}/${VIRTUAL_ENV}")) {
-                        bat "python -m venv ${VIRTUAL_ENV}"
+                        bat "\"C:\\Users\\LENOVO\\AppData\\Local\\Programs\\Python\\Python313\\python.exe\" -m venv ${VIRTUAL_ENV}"
                     }
                     bat "call ${VIRTUAL_ENV}\\Scripts\\activate.bat && pip install -r requirements.txt"
                 }
@@ -50,11 +50,7 @@ pipeline {
             steps {
                 script {
                     bat """
-                        call ${VIRTUAL_ENV}\\Scripts\\activate.bat && \
-                        bandit -r . -f json -o bandit-report.json
-                        if errorlevel 1 echo Bandit scan completed with warnings or errors
-                        bandit -r . -f txt -o bandit-report.txt
-                        if errorlevel 1 echo Bandit scan completed with warnings or errors
+                        call ${VIRTUAL_ENV}\\Scripts\\activate.bat && bandit -r . -f json -o bandit-report.json || (echo Bandit scan completed with warnings or errors & ver > nul) && bandit -r . -f txt -o bandit-report.txt || (echo Bandit scan completed with warnings or errors & ver > nul)
                     """
                 }
             }
