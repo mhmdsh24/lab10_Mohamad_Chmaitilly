@@ -8,31 +8,31 @@ pipeline {
             steps {
                 script {
                     if (!fileExists("${env.WORKSPACE}/${VIRTUAL_ENV}")) {
-                        sh "python -m venv ${VIRTUAL_ENV}"
+                        bat "python -m venv ${VIRTUAL_ENV}"
                     }
-                    sh "source ${VIRTUAL_ENV}/bin/activate && pip install -r requirements.txt"
+                    bat "call ${VIRTUAL_ENV}\\Scripts\\activate.bat && pip install -r requirements.txt"
                 }
             }
         }
         stage('Lint') {
             steps {
                 script {
-                    sh "source ${VIRTUAL_ENV}/bin/activate && flake8 app.py"
+                    bat "call ${VIRTUAL_ENV}\\Scripts\\activate.bat && flake8 app.py"
                 }
             }
         }
         stage('Test') {
             steps {
                 script {
-                    sh "source ${VIRTUAL_ENV}/bin/activate && pytest"
+                    bat "call ${VIRTUAL_ENV}\\Scripts\\activate.bat && pytest"
                 }
             }
         }
         stage('Coverage') {
             steps {
                 script {
-                    sh """
-                        source ${VIRTUAL_ENV}/bin/activate && \
+                    bat """
+                        call ${VIRTUAL_ENV}\\Scripts\\activate.bat && \
                         coverage run -m pytest && \
                         coverage report && \
                         coverage html
@@ -52,10 +52,12 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
-                    sh """
-                        source ${VIRTUAL_ENV}/bin/activate && \
-                        bandit -r . -f json -o bandit-report.json || true && \
+                    bat """
+                        call ${VIRTUAL_ENV}\\Scripts\\activate.bat && \
+                        bandit -r . -f json -o bandit-report.json
+                        if errorlevel 1 echo Bandit scan completed with warnings or errors
                         bandit -r . -f txt -o bandit-report.txt
+                        if errorlevel 1 echo Bandit scan completed with warnings or errors
                     """
                 }
             }
@@ -68,17 +70,17 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh """
-                        source ${VIRTUAL_ENV}/bin/activate && \
-                        echo "Deploying application..." && \
-                        mkdir -p deploy && \
-                        cp app.py deploy/ && \
-                        cp requirements.txt deploy/ && \
-                        echo "Application files copied to deploy directory"
+                    bat """
+                        call ${VIRTUAL_ENV}\\Scripts\\activate.bat && \
+                        echo Deploying application... && \
+                        if not exist deploy (mkdir deploy) && \
+                        copy app.py deploy\\ && \
+                        copy requirements.txt deploy\\ && \
+                        echo Application files copied to deploy directory
                     """
                     // For remote deployment, uncomment and configure:
-                    // sh """
-                    //     scp -r deploy/* user@remote-server:/path/to/deployment/
+                    // bat """
+                    //     scp -r deploy\\* user@remote-server:/path/to/deployment/
                     //     ssh user@remote-server "cd /path/to/deployment && pip install -r requirements.txt"
                     // """
                     echo "Deployment completed successfully!"
