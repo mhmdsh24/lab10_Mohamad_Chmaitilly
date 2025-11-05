@@ -1,0 +1,11 @@
+*.log
+*.tmp
+*.pyc
+__pycache__/
+.venv
+.DS_Store
+node_modules/
+dist/
+build/
+.vscode/
+.idea/
